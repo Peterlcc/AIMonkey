@@ -82,8 +82,7 @@ public class MainConfig {
                 .setGenomeSize(globalParam.getGenomeSize())
                 .setMaxGenomeSize(globalParam.getMaxGenomeSize())
                 .setExpandAmount(globalParam.getExpandAmount())
-                .setExpandRate(globalParam.getExpandRate())
-                .setMaxIterationCount(globalParam.getMaxIterationCount());
+                .setExpandRate(globalParam.getExpandRate());
 
         return fitness;
     }

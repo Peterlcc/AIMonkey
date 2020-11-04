@@ -6,17 +6,17 @@ spring:
 buaa:
   programer:
     rootPath: F:/tmp
-    target-fitness-count: 0
-    crossover-rate: 0.7 #Percentage chance that a child genome will use crossover of two parents.
-    mutationrate: 0.01
-    genome-size: 50
-    max-genome-size: 150
-    max-iteration-count: 5000
+    target-fitness-count: 0 #最大连续适应度限制
+    crossover-rate: 0.7 #交叉概率
+    mutationrate: 0.01 #变异概率
+    genome-size: 50 #基因序列长度
+    max-genome-size: 150 #最大基因长度
+    max-iteration-count: 5000 #最大迭代次数
     expand-amount: 0
     expand-rate: 5000
-    original-genome-size: 50
-    population-size: 100
+    original-genome-size: 50 #初始基因长度
+    population-size: 100 #种群大小
     generation-size: 100000
     target-string: hello
   manager:
-    brain-version: 1
+    brain-version: 1 #编译器版本
