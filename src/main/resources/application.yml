@@ -1,0 +1,22 @@
+logging:
+  config: classpath:log4j2.properties
+spring:
+  application:
+    name: BUAA-AIMonkey
+buaa:
+  programer:
+    rootPath: F:/tmp
+    target-fitness-count: 0
+    crossover-rate: 0.7 #Percentage chance that a child genome will use crossover of two parents.
+    mutationrate: 0.01
+    genome-size: 50
+    max-genome-size: 150
+    max-iteration-count: 5000
+    expand-amount: 0
+    expand-rate: 5000
+    original-genome-size: 50
+    population-size: 100
+    generation-size: 100000
+    target-string: hello
+  manager:
+    brain-version: 1
