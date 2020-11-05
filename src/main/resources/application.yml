@@ -20,3 +20,4 @@ buaa:
     target-string: hello
   manager:
     brain-version: 1 #编译器版本
+  data-format-pattern: yyyy-MM-dd HH:mm:ss:SSS #时间格式化字符串

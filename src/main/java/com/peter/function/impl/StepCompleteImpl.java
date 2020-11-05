@@ -24,14 +24,12 @@ public class StepCompleteImpl implements StepComplete {
     @Autowired
     private GlobalParam globalParam;
     @Autowired
-    private IGeneticAlgorithm ga;
-    @Autowired
     private AlgorithmClock algorithmClock;
 
     @Override
     public void onComplete(String program, Object param) {
         // Reset genome size back to its original value for subsequent solving steps.
-        this.param.setGenomeSize( globalParam.getOriginalGenomeSize());
+        this.param.setGenomeSize(globalParam.getOriginalGenomeSize());
 
         // Reset timer.
         algorithmClock.setStartTime(new Date());

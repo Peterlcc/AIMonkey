@@ -6,6 +6,7 @@ import com.peter.bean.Param;
 import com.peter.bean.Status;
 import com.peter.config.GlobalParam;
 import com.peter.function.OnGeneration;
+import com.peter.utils.DateFormater;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -29,6 +30,9 @@ public class OnGenerationImpl implements OnGeneration {
 
     @Autowired
     private GlobalParam globalParam;
+
+    @Autowired
+    private DateFormater dateFormater;
     
     @Override
     public void function(GA ga) {
@@ -41,16 +45,15 @@ public class OnGenerationImpl implements OnGeneration {
                     ", Running: " + Math.floor((System.currentTimeMillis() - algorithmClock.getStartTime().getTime()) / 60 / 1000)
                     + "m " + Math.round(((System.currentTimeMillis() - algorithmClock.getStartTime().getTime()) / 1000 % 60)) +
                     "ms, Size: " + param.getGenomeSize() + ", Best Output: " + status.getOutput() +
-                    ", Changed: " + status.getLastChangeDate().toString() + ", Program: " + status.getProgram());
+                    ", Changed: " + dateFormater.convert(status.getLastChangeDate()) + ", Program: " + status.getProgram());
 
             ga.save("my-genetic-algorithm.dat");
         }
-        if (globalParam.getExpandAmount() > 0 && ga.getParams().getCurrentGeneration() > 0
-                && ga.getParams().getCurrentGeneration() % globalParam.getExpandRate() == 0
-                && globalParam.getGenomeSize() < globalParam.getMaxGenomeSize())
+        if (globalParam.getExpandAmount() > 0 && param.getCurrentGeneration() > 0
+                && param.getCurrentGeneration() % globalParam.getExpandRate() == 0
+                && param.getGenomeSize() < globalParam.getMaxGenomeSize())
         {
-            globalParam.setGenomeSize(globalParam.getGenomeSize()+globalParam.getExpandAmount());
-            ga.getParams().setGenomeSize( globalParam.getGenomeSize());
+            param.setGenomeSize(param.getGenomeSize()+globalParam.getExpandAmount());
 
             status.setFitness(0); // Update display of best program, since genome has changed and we have a better/worse new best fitness.
         }
@@ -66,6 +69,6 @@ public class OnGenerationImpl implements OnGeneration {
                 ", Running: " + Math.floor((System.currentTimeMillis() - algorithmClock.getStartTime().getTime()) / 60 / 1000)
                 + "m " + Math.round(((System.currentTimeMillis() - algorithmClock.getStartTime().getTime()) / 1000 % 60)) +
                 "ms, Size: " + param.getGenomeSize() + ", Best Output: " + status.getOutput() +
-                ", Changed: " + status.getLastChangeDate().toString() + ", Program: " + status.getProgram());
+                ", Changed: " + dateFormater.convert(status.getLastChangeDate()) + ", Program: " + status.getProgram());
     }
 }

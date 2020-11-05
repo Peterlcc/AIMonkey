@@ -28,7 +28,6 @@ public class GAFunctionImpl implements GAFunction {
         myFitness.reset();
         // Get the fitness score.
         double fitness = myFitness.getFitness(weights);
-//        log.info("get ws="+weights.length);
         // Is this a new best fitness?
         if (fitness > status.getFitness())
         {

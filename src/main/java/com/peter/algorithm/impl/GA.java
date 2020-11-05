@@ -6,12 +6,16 @@ import com.peter.bean.Param;
 import com.peter.config.GlobalParam;
 import com.peter.function.GAFunction;
 import com.peter.function.OnGeneration;
+import com.peter.service.CrossService;
+import com.peter.service.MutateService;
+import com.peter.service.SelectorService;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -28,20 +32,25 @@ import java.util.*;
 @Slf4j
 @Component
 public class GA implements IGeneticAlgorithm {
-    @Autowired
-    private Random random = new Random();
 
+    @Autowired
+    private Random random;
     @Autowired
     private Param params;
-
     @Autowired
     private GAFunction gaFunction;
-
     @Autowired
     private OnGeneration onGeneration;
-
     @Autowired
     private GlobalParam globalParam;
+
+    @Autowired
+    private MutateService mutateService;
+    @Qualifier("singlePointCrossServiceImpl")
+    @Autowired
+    private CrossService crossService;
+    @Autowired
+    private SelectorService selectorService;
 
     private boolean stop=false;
 
@@ -61,26 +70,18 @@ public class GA implements IGeneticAlgorithm {
         if (params.getGenomeSize() == 0)
             throw new RuntimeException("Genome size not set");
         /// -------------
-        Genome.mMutationRate = params.getMutationRate();
 
         if (!resume) {
             //  Create the fitness table.
-            params.setFitnessTable(new ArrayList<>());
-            params.setThisGeneration(new ArrayList<>(params.getGenerations()));
-            params.setNextGeneration(new ArrayList<>(params.getGenerations()));
             params.setTotalFitness(0);
-//            params.setTargetFitness(0);//这里不可以设置
-            params.setTargetFitnessCount(0);
             params.setCurrentGeneration(0);
             stop = false;
 
             createGenomes();
             rankPopulation();
         }
-        log.debug("stop:"+stop);
         double fitness=0;
         while (params.getCurrentGeneration() < params.getGenerations() && !stop) {
-//            log.info(params.getCurrentGeneration()+"<"+params.getGenerations()+","+stop);
             createNextGeneration();
 
             fitness = rankPopulation();
@@ -99,10 +100,10 @@ public class GA implements IGeneticAlgorithm {
 
                 lastEpoch = new Date();
             }
-//            log.debug("params:"+params);
+
+            //当最优适应度值连续大于目标适应度TargetFitnessCount次时，遗传算法结束，即循环结束。否则参数的TargetFitnessCount重置
             if (params.getTargetFitness() > 0 && fitness >= params.getTargetFitness()) {
                 params.setTargetFitnessCount(params.getTargetFitnessCount() + 1);
-                log.debug("GlobalParam.targetFitnessCount="+ globalParam.getTargetFitnessCount());
                 if (params.getTargetFitnessCount() > globalParam.getTargetFitnessCount()) {
                     break;
                 }
@@ -121,48 +122,16 @@ public class GA implements IGeneticAlgorithm {
         onGeneration.complete();
     }
 
-    private int rouletteSelection() {
-        double randomFitness = random.nextDouble()
-                * (
-                params.getFitnessTable().get(params.getFitnessTable().size() - 1) == 0 ?
-                        1 :
-                        params.getFitnessTable().get(params.getFitnessTable().size() - 1));
-        int idx = -1;
-        int mid;
-        int first = 0;
-        int last = params.getPopulationSize() - 1;
-        mid = (last - first) / 2;
-
-        //  ArrayList's BinarySearch is for exact values only
-        //  so do this by hand.
-        while (idx == -1 && first <= last) {
-            if (randomFitness < params.getFitnessTable().get(mid)) {
-                last = mid;
-            } else if (randomFitness > params.getFitnessTable().get(mid)) {
-                first = mid;
-            }
-            mid = (first + last) / 2;
-            //  lies between i and i+1
-            if ((last - first) == 1)
-                idx = last;
-        }
-        return idx;
-    }
-
+    /**
+     * 本代种群个体计算适应度值并排序，统计总适应度
+     * @return 本代中最优的适应度
+     */
     private double rankPopulation() {
         params.setTotalFitness(0);
-//        long start = System.currentTimeMillis();
-        params.getThisGeneration().forEach(g -> {
-            g.setMFitness(gaFunction.function(g.getMGenes()));
-            params.setTotalFitness(params.getTotalFitness() + g.getMFitness());
-        });
-//        long dis = System.currentTimeMillis()-start;
-//        log.info("dis="+dis+",,"+params.getThisGeneration().size()+"--"+params.getNextGeneration().size());
-//        log.info("ThisGeneration[0].fit="+params.getThisGeneration().get(0).getMFitness());
-//        Collections.sort(params.getThisGeneration(), (x, y) -> (int) (x.getMFitness() - y.getMFitness()));
-        Collections.sort(params.getThisGeneration(), new Comparator<Genome>() {
-            @Override
-            public int compare(Genome o1, Genome o2) {
+
+        params.getThisGeneration().forEach(g -> g.setMFitness(gaFunction.function(g.getMGenes())));
+
+        Collections.sort(params.getThisGeneration(), (o1, o2)-> {
                 if (o1!=null&&o2!=null){
                     double m1Fitness = o1.getMFitness();
                     double m2Fitness = o2.getMFitness();
@@ -177,8 +146,7 @@ public class GA implements IGeneticAlgorithm {
                     log.error(msg);
                     throw new RuntimeException(msg);
                 }
-            }
-        });
+            });
 
         //  now sorted in order of fitness.
         double fitness = 0.0;
@@ -191,16 +159,24 @@ public class GA implements IGeneticAlgorithm {
         return params.getFitnessTable().get(params.getFitnessTable().size() - 1);
     }
 
+    /**
+     * 根据种群大小创建本代的基因
+     */
     private void createGenomes() {
-//        log.info("create "+params.getGenomeSize()+","+params.getPopulationSize());
         for (int i = 0; i < params.getPopulationSize(); i++) {
             Genome g = new Genome(params.getGenomeSize());
+            g.createGenes();
             params.getThisGeneration().add(g);
         }
     }
 
+    /**
+     * 调用选择和Genome的交换产生下一代
+     */
     private void createNextGeneration() {
-        params.getNextGeneration().clear();
+//        params.getNextGeneration().clear();
+        params.setNextGeneration(new ArrayList<>(params.getPopulationSize()));
+
         Genome g = null, g2 = null;
         int length = params.getPopulationSize();
         if (params.isElitism()) {
@@ -213,22 +189,27 @@ public class GA implements IGeneticAlgorithm {
             length -= 2;
         }
         for (int i = 0; i < length; i += 2) {
-            int pidx1 = rouletteSelection();
-            int pidx2 = rouletteSelection();
+            int pidx1 = selectorService.select();
+            int pidx2 = selectorService.select();
+//            int pidx1 = rouletteSelection();
+//            int pidx2 = rouletteSelection();
             Genome parent1, parent2, child1, child2;
             parent1 = params.getThisGeneration().get(pidx1);
             parent2 = params.getThisGeneration().get(pidx2);
 
             if (random.nextDouble() < params.getCrossoverRate()) {
-                List<Genome> childs = parent1.crossover(parent2);
+//                List<Genome> childs = parent1.crossover(parent2);
+                List<Genome> childs = crossService.crossover(parent1,parent2);
                 child1 = childs.get(0);
                 child2 = childs.get(1);
             } else {
                 child1 = parent1;
                 child2 = parent2;
             }
-            child1.mutate();
-            child2.mutate();
+            mutateService.mutate(child1);
+            mutateService.mutate(child2);
+//            child1.mutate();
+//            child2.mutate();
 
             params.getNextGeneration().add(child1);
             params.getNextGeneration().add(child2);
@@ -249,7 +230,7 @@ public class GA implements IGeneticAlgorithm {
             });
         }
 
-        params.setThisGeneration(new ArrayList<>(params.getNextGeneration()));
+        params.setThisGeneration(params.getNextGeneration());
             /*params.m_thisGeneration.Clear();
             foreach (Genome ge in params.m_nextGeneration)
                 params.m_thisGeneration.Add(ge);*/
@@ -269,32 +250,24 @@ public class GA implements IGeneticAlgorithm {
         go(true);
     }
 
-    public List<Object> getBest() {
-        List<Object> res = new ArrayList<>();
+    public Genome getBest() {
         Genome genome = params.getThisGeneration().get(params.getPopulationSize() - 1);
-        double[] values = genome.getValues();
-        double fitness = genome.getMFitness();
-        res.add(values);
-        res.add(fitness);
-        return res;
+        log.debug("get best:"+genome);
+        return genome;
     }
 
-    public List<Object> getWorst() {
+    public Genome getWorst() {
         return getNthGenome(0);
     }
 
-    public List<Object> getNthGenome(int n) {
-        List<Object> res = new ArrayList<>();
+    public Genome getNthGenome(int n) {
         /// Preconditions
         /// -------------
         if (n < 0 || n > params.getPopulationSize() - 1)
             throw new RuntimeException("n too large, or too small");
         /// -------------
         Genome g = params.getThisGeneration().get(n);
-        double[] gValues = g.getValues();
-        res.add(gValues);
-        res.add(g.getMFitness());
-        return res;//gvalues and fitness
+        return g;//g with values and fitness
     }
 
     public void setNthGenome(int n, double[] values, double fitness) {

@@ -28,7 +28,7 @@ public class AlgorithmServiceImpl implements AlgorithmService {
     private FitnessBase fitnessBase;
 
     @Autowired
-    private Param targetParams;
+    private Param params;
 
     @Autowired
     private GaManager gaManager;
@@ -45,28 +45,23 @@ public class AlgorithmServiceImpl implements AlgorithmService {
     private GlobalParam globalParam;
     @Override
     public void run() {
-//        log.info(globalParam.toString());
-        log.info("start");
-        log.info(globalParam.toString());
-//        log.info("start with populationSize="+populationSize+",generationSize="+generationSize);
-        // Genetic algorithm setup.
-
-        targetParams.setTargetFitness(fitnessBase.getTargetFitness());
-        ga.getParams().setTargetFitness(fitnessBase.getTargetFitness());
+        log.info("start"+globalParam.toString());
 
         if (functionGenerator != null)
         {
             log.debug("functionGenerator!=null");
             // Generate additional functions.
             String generate = functionGenerator.generate(ga);
+
             log.debug("generate:"+generate);
+
             appendCode += generate;
+
             log.debug("appendCode:"+appendCode);
         }
-        // Generate main program. Instantiate the fitness method.
 
         // Get the target fitness for this method.
-        targetParams.setTargetFitness(myFitness.getTargetFitness());
+        params.setTargetFitness(myFitness.getTargetFitness());
 
         // Run the genetic algorithm and get the best brain.
         String program = gaManager.run();
@@ -79,7 +74,6 @@ public class AlgorithmServiceImpl implements AlgorithmService {
 
         // Display the final program.
         log.info("program:"+program);
-        log.info("");
 
         // Compile to executable.
 //        BrainPlus.Compile(program, "    output.exe", myFitness);

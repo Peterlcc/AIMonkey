@@ -38,10 +38,15 @@ public class Param {
 
     public Param()
     {
-        thisGeneration = new ArrayList<>();
-        nextGeneration = new ArrayList<>();
-        fitnessTable = new ArrayList<>();
+
     }
+
+    public void initGenerations(int size){
+        thisGeneration = new ArrayList<>(size);
+        nextGeneration = new ArrayList<>(size);
+        fitnessTable = new ArrayList<>(size);
+    }
+
     public void showLen(){
         log.info("this gen:"+thisGeneration.size()+",next len:"+nextGeneration.size()+",fittable:"+fitnessTable.size());
     }
