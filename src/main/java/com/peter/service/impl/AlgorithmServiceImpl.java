@@ -25,9 +25,6 @@ public class AlgorithmServiceImpl implements AlgorithmService {
     private IGeneticAlgorithm ga;
 
     @Autowired
-    private FitnessBase fitnessBase;
-
-    @Autowired
     private Param params;
 
     @Autowired
@@ -45,7 +42,8 @@ public class AlgorithmServiceImpl implements AlgorithmService {
     private GlobalParam globalParam;
     @Override
     public void run() {
-        log.info("start"+globalParam.toString());
+        log.info("start");
+        log.info(globalParam.toString());
 
         if (functionGenerator != null)
         {

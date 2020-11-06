@@ -72,7 +72,7 @@ public class GaManager {
 //            ga.setGaFunction(fitnessFunc);
 //            ga.setOnGeneration(generationFunc);
 
-            param.setElitism(true);
+//            param.setElitism(true);
             ga.setStop(false);
             ga.go();
         }

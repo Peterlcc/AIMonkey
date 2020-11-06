@@ -18,6 +18,7 @@ buaa:
     population-size: 100 #种群大小
     generation-size: 100000
     target-string: hello
+    elitism: true
   manager:
     brain-version: 1 #编译器版本
   data-format-pattern: yyyy-MM-dd HH:mm:ss:SSS #时间格式化字符串

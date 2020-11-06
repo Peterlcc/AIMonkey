@@ -47,13 +47,13 @@ public class MainConfig {
         param.initGenerations(globalParam.getPopulationSize());
 
         param.setGenomeSize(globalParam.getGenomeSize())
-                .setCrossoverRate(globalParam.getCrossoverRate())
-                .setMutationRate(globalParam.getMutationRate())
-                .setPopulationSize(globalParam.getPopulationSize())
-                .setGenerations(globalParam.getGenerationSize())
+//                .setCrossoverRate(globalParam.getCrossoverRate())
+//                .setMutationRate(globalParam.getMutationRate())
+//                .setPopulationSize(globalParam.getPopulationSize())
+//                .setGenerations(globalParam.getGenerationSize())
                 .setTargetFitness(fitnessBase.getTargetFitness())
-                .setTargetFitnessCount(0)
-                .setHistoryPath(globalParam.getRootPath() + File.separator + "history.txt");
+                .setTargetFitnessCount(0);
+//                .setHistoryPath(globalParam.getRootPath() + File.separator + "history.txt");
 
         //基因类的变异率设置
         Genome.mMutationRate = globalParam.getMutationRate();

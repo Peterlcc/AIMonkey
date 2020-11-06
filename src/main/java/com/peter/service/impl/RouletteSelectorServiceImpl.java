@@ -1,6 +1,7 @@
 package com.peter.service.impl;
 
 import com.peter.bean.Param;
+import com.peter.config.GlobalParam;
 import com.peter.service.SelectorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,9 @@ public class RouletteSelectorServiceImpl implements SelectorService {
     @Autowired
     private Param params;
 
+    @Autowired
+    private GlobalParam globalParam;
+
     @Override
     /**
      * 轮盘赌选择一个个体
@@ -37,7 +41,7 @@ public class RouletteSelectorServiceImpl implements SelectorService {
         int idx = -1;
         int mid;
         int first = 0;
-        int last = params.getPopulationSize() - 1;
+        int last = globalParam.getPopulationSize() - 1;
         mid = (last - first) / 2;
 
         //  ArrayList's BinarySearch is for exact values only

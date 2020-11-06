@@ -81,17 +81,17 @@ public class GA implements IGeneticAlgorithm {
             rankPopulation();
         }
         double fitness=0;
-        while (params.getCurrentGeneration() < params.getGenerations() && !stop) {
+        while (params.getCurrentGeneration() < globalParam.getGenerationSize() && !stop) {
             createNextGeneration();
 
             fitness = rankPopulation();
             if (params.getCurrentGeneration() % 100 == 0) {
                 log.info("Generation " + params.getCurrentGeneration() + ", Time: " + Math.round(System.currentTimeMillis() - lastEpoch.getTime()) + "ms, Best Fitness: " + fitness);
 
-                if (params.getHistoryPath() != "") {
+                if (globalParam.getHistoryPath() != "") {
                     // Record history timeline.
                     try {
-                        FileUtils.writeStringToFile(new File(params.getHistoryPath()),
+                        FileUtils.writeStringToFile(new File(globalParam.getHistoryPath()),
                                 System.currentTimeMillis() + "," + fitness + "," + params.getTargetFitness() + "," + params.getCurrentGeneration(), "utf-8");
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -117,7 +117,7 @@ public class GA implements IGeneticAlgorithm {
 
             params.setCurrentGeneration(params.getCurrentGeneration() + 1);
         }
-        log.info(params.getCurrentGeneration()+"<"+params.getGenerations()+","+stop);
+        log.info(params.getCurrentGeneration()+"<"+globalParam.getGenerationSize()+","+stop);
         log.info("Generation " + params.getCurrentGeneration() + ", Time: " + Math.round(System.currentTimeMillis() - lastEpoch.getTime()) + "ms, Best Fitness: " + fitness);
         onGeneration.complete();
     }
@@ -163,7 +163,7 @@ public class GA implements IGeneticAlgorithm {
      * 根据种群大小创建本代的基因
      */
     private void createGenomes() {
-        for (int i = 0; i < params.getPopulationSize(); i++) {
+        for (int i = 0; i < globalParam.getPopulationSize(); i++) {
             Genome g = new Genome(params.getGenomeSize());
             g.createGenes();
             params.getThisGeneration().add(g);
@@ -175,15 +175,15 @@ public class GA implements IGeneticAlgorithm {
      */
     private void createNextGeneration() {
 //        params.getNextGeneration().clear();
-        params.setNextGeneration(new ArrayList<>(params.getPopulationSize()));
+        params.setNextGeneration(new ArrayList<>(globalParam.getPopulationSize()));
 
         Genome g = null, g2 = null;
-        int length = params.getPopulationSize();
-        if (params.isElitism()) {
-            g = params.getThisGeneration().get(params.getPopulationSize() - 1).deepCopy();
-            g.setAge(params.getThisGeneration().get(params.getPopulationSize() - 1).getAge());
-            g2 = params.getThisGeneration().get(params.getPopulationSize() - 2).deepCopy();
-            g2.setAge(params.getThisGeneration().get(params.getPopulationSize() - 2).getAge());
+        int length = globalParam.getPopulationSize();
+        if (globalParam.isElitism()) {
+            g = params.getThisGeneration().get(globalParam.getPopulationSize() - 1).deepCopy();
+            g.setAge(params.getThisGeneration().get(globalParam.getPopulationSize() - 1).getAge());
+            g2 = params.getThisGeneration().get(globalParam.getPopulationSize() - 2).deepCopy();
+            g2.setAge(params.getThisGeneration().get(globalParam.getPopulationSize() - 2).getAge());
 
 
             length -= 2;
@@ -197,7 +197,7 @@ public class GA implements IGeneticAlgorithm {
             parent1 = params.getThisGeneration().get(pidx1);
             parent2 = params.getThisGeneration().get(pidx2);
 
-            if (random.nextDouble() < params.getCrossoverRate()) {
+            if (random.nextDouble() < globalParam.getCrossoverRate()) {
 //                List<Genome> childs = parent1.crossover(parent2);
                 List<Genome> childs = crossService.crossover(parent1,parent2);
                 child1 = childs.get(0);
@@ -214,7 +214,7 @@ public class GA implements IGeneticAlgorithm {
             params.getNextGeneration().add(child1);
             params.getNextGeneration().add(child2);
         }
-        if (params.isElitism() && g != null) {
+        if (globalParam.isElitism() && g != null) {
             if (g2 != null)
                 params.getNextGeneration().add(g2);
             if (g != null)
@@ -251,7 +251,7 @@ public class GA implements IGeneticAlgorithm {
     }
 
     public Genome getBest() {
-        Genome genome = params.getThisGeneration().get(params.getPopulationSize() - 1);
+        Genome genome = params.getThisGeneration().get(globalParam.getPopulationSize() - 1);
         log.debug("get best:"+genome);
         return genome;
     }
@@ -263,7 +263,7 @@ public class GA implements IGeneticAlgorithm {
     public Genome getNthGenome(int n) {
         /// Preconditions
         /// -------------
-        if (n < 0 || n > params.getPopulationSize() - 1)
+        if (n < 0 || n > globalParam.getPopulationSize() - 1)
             throw new RuntimeException("n too large, or too small");
         /// -------------
         Genome g = params.getThisGeneration().get(n);
@@ -273,7 +273,7 @@ public class GA implements IGeneticAlgorithm {
     public void setNthGenome(int n, double[] values, double fitness) {
         // Preconditions
         // -------------
-        if (n < 0 || n > params.getPopulationSize() - 1)
+        if (n < 0 || n > globalParam.getPopulationSize() - 1)
             throw new RuntimeException("n too large, or too small");
         /// -------------
         Genome g = params.getThisGeneration().get(n);

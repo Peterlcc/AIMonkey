@@ -19,13 +19,13 @@ import java.util.List;
 @Accessors(chain = true)
 @Slf4j
 public class Param {
-    private int populationSize;
-    private int generations;
+//    private int populationSize;
+//    private int generations;
     private int genomeSize;
-    private double crossoverRate;
-    private double mutationRate;
-    private boolean elitism;
-    private String historyPath;
+//    private double crossoverRate;
+//    private double mutationRate;
+//    private boolean elitism;
+//    private String historyPath;
 
     private double totalFitness;
     private double targetFitness;
