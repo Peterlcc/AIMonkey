@@ -5,6 +5,7 @@ import com.peter.config.GlobalParam;
 import com.peter.service.SelectorService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
@@ -15,6 +16,7 @@ import java.util.Random;
  * 轮盘赌选择器实现类
  */
 @Service
+@ConditionalOnProperty(value = "buaa.manager.select-impl",havingValue = "Roulette")
 @Slf4j
 public class RouletteSelectorServiceImpl implements SelectorService {
 

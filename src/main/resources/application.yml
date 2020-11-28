@@ -19,6 +19,16 @@ buaa:
     generation-size: 100000
     target-string: hello
     elitism: true
+    adaptive: true #是否开启自适应
+    max-fitness: -1 #当前种群最大适应度
+    avg-fitness: -1 #当前种群平均适应度
+    k1: 0.1
+    k2: 0.5
+    k3: 0.1
+    k4: 0.5
   manager:
     brain-version: 1 #编译器版本
+    cross-impl: BinarySinglePoint #[BinarySinglePoint,SinglePoint]
+    mutate-impl: OriginMutate #[OriginMutate]
+    select-impl: Roulette #[Roulette]
   data-format-pattern: yyyy-MM-dd HH:mm:ss:SSS #时间格式化字符串

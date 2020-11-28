@@ -4,6 +4,7 @@ import com.peter.bean.Genome;
 import com.peter.service.CrossService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import java.util.Random;
  */
 @Service
 @Slf4j
+@ConditionalOnProperty(value = "buaa.manager.cross-impl",havingValue = "SinglePoint")
 public class SinglePointCrossServiceImpl implements CrossService {
 
     @Autowired

@@ -5,6 +5,7 @@ import com.peter.service.CrossService;
 import com.peter.utils.BinaryUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -17,6 +18,7 @@ import java.util.Random;
  */
 @Service
 @Slf4j
+@ConditionalOnProperty(value = "buaa.manager.cross-impl",havingValue = "BinarySinglePoint")
 public class BinarySinglePointCrossServiceImpl implements CrossService {
 
     @Autowired

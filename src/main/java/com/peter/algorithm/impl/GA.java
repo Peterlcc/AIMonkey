@@ -2,6 +2,7 @@ package com.peter.algorithm.impl;
 
 import com.peter.algorithm.IGeneticAlgorithm;
 import com.peter.bean.Genome;
+import com.peter.bean.Operator;
 import com.peter.bean.Param;
 import com.peter.config.GlobalParam;
 import com.peter.function.GAFunction;
@@ -46,7 +47,7 @@ public class GA implements IGeneticAlgorithm {
 
     @Autowired
     private MutateService mutateService;
-    @Qualifier("singlePointCrossServiceImpl")
+//    @Qualifier("binarySinglePointCrossServiceImpl")
     @Autowired
     private CrossService crossService;
     @Autowired
@@ -151,11 +152,18 @@ public class GA implements IGeneticAlgorithm {
         //  now sorted in order of fitness.
         double fitness = 0.0;
         params.getFitnessTable().clear();
+
+        double maxFitness=-1;
+
         for (Genome genome : params.getThisGeneration()) {
             fitness += genome.getMFitness();
             params.getFitnessTable().add(genome.getMFitness());
+            maxFitness=Math.max(maxFitness,genome.getMFitness());
         }
         params.setTotalFitness(fitness);
+
+        globalParam.setAvgFitness(fitness/params.getThisGeneration().size());//计算平均适应度
+
         return params.getFitnessTable().get(params.getFitnessTable().size() - 1);
     }
 
@@ -188,16 +196,26 @@ public class GA implements IGeneticAlgorithm {
 
             length -= 2;
         }
+
         for (int i = 0; i < length; i += 2) {
+
             int pidx1 = selectorService.select();
             int pidx2 = selectorService.select();
-//            int pidx1 = rouletteSelection();
-//            int pidx2 = rouletteSelection();
-            Genome parent1, parent2, child1, child2;
+
+            //int pidx1 = rouletteSelection();
+            //int pidx2 = rouletteSelection();
+
+            Genome parent1=null, parent2=null, child1=null, child2=null;
             parent1 = params.getThisGeneration().get(pidx1);
             parent2 = params.getThisGeneration().get(pidx2);
 
-            if (random.nextDouble() < globalParam.getCrossoverRate()) {
+            double crossRate=globalParam.getCrossoverRate();
+            if (globalParam.isAdaptive()&&globalParam.getMaxFitness() > 0) {
+                double fitness=Math.max(parent1.getMFitness(),parent1.getMFitness());
+                crossRate=globalParam.calcRate(fitness, Operator.CROSS);
+            }
+
+            if (random.nextDouble() <crossRate) {
 //                List<Genome> childs = parent1.crossover(parent2);
                 List<Genome> childs = crossService.crossover(parent1,parent2);
                 child1 = childs.get(0);
@@ -206,10 +224,9 @@ public class GA implements IGeneticAlgorithm {
                 child1 = parent1;
                 child2 = parent2;
             }
+
             mutateService.mutate(child1);
             mutateService.mutate(child2);
-//            child1.mutate();
-//            child2.mutate();
 
             params.getNextGeneration().add(child1);
             params.getNextGeneration().add(child2);

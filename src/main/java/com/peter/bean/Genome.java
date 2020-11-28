@@ -24,7 +24,7 @@ public class Genome {
 
     private double[] mGenes;
     private int mLength;
-    private double mFitness;
+    private double mFitness=-1;//个体适应度
     private int age;
 
     public Genome()

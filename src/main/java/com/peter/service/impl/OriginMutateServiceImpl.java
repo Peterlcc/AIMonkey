@@ -1,10 +1,12 @@
 package com.peter.service.impl;
 
 import com.peter.bean.Genome;
+import com.peter.bean.Operator;
 import com.peter.config.GlobalParam;
 import com.peter.service.MutateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
@@ -15,6 +17,7 @@ import java.util.Random;
  */
 @Service
 @Slf4j
+@ConditionalOnProperty(value = "buaa.manager.mutate-impl",havingValue = "OriginMutate")
 public class OriginMutateServiceImpl implements MutateService {
 
     @Autowired
@@ -27,6 +30,10 @@ public class OriginMutateServiceImpl implements MutateService {
     public void mutate(Genome genome) {
         int mLength = genome.getMLength();
         double mMutationRate = globalParam.getMutationRate();
+        if (globalParam.isAdaptive()&&globalParam.getMaxFitness() > 0) {
+            mMutationRate=globalParam.calcRate(genome.getMFitness(), Operator.MUTATE);
+        }
+
         double[] mGenes = genome.getMGenes();
 
         for (int pos = 0; pos < mLength; pos++){
